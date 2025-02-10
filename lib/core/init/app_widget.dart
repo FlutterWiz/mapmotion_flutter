@@ -4,7 +4,7 @@ import 'package:mapmotion_flutter/core/di/dependency_injector.dart';
 import 'package:mapmotion_flutter/presentation/blocs/application_life_cycle/application_life_cycle_cubit.dart';
 import 'package:mapmotion_flutter/presentation/blocs/location/location_cubit.dart';
 import 'package:mapmotion_flutter/presentation/blocs/permission/permission_cubit.dart';
-import 'package:mapmotion_flutter/presentation/views/home/home_view.dart';
+import 'package:mapmotion_flutter/presentation/views/map/map_view.dart';
 
 class AppWidget extends StatelessWidget {
   const AppWidget({super.key});
@@ -25,7 +25,7 @@ class AppWidget extends StatelessWidget {
       ],
       child: const MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: HomeView(),
+        home: MapView(),
       ),
     );
   }
