@@ -25,3 +25,4 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+lib/core/config/app_config.dart
