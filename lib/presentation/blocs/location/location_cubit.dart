@@ -63,11 +63,11 @@ class LocationCubit extends Cubit<LocationState> {
   /// Starts simulating location changes.
   void startSimulation() {
     _simulationTimer?.cancel();
-    _simulationTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+    _simulationTimer = Timer.periodic(const Duration(milliseconds: 1850), (timer) {
       if (state.userLocation != null) {
         final newLoc = Location(
-          latitude: state.userLocation!.latitude + 0.003,
-          longitude: state.userLocation!.longitude + 0.003,
+          latitude: state.userLocation!.latitude + 0.015,
+          longitude: state.userLocation!.longitude + 0.015,
         );
         emit(state.copyWith(userLocation: newLoc));
       }
