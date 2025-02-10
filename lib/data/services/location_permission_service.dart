@@ -19,6 +19,7 @@ class LocationPermissionService implements ILocationPermissionService {
   @override
   Future<LocationPermissionStatusEnum> requestLocationPermission() async {
     final status = await Geolocator.checkPermission();
+
     final isGranted = status == LocationPermission.always || status == LocationPermission.whileInUse;
     final deniedForever = status == LocationPermission.deniedForever;
 

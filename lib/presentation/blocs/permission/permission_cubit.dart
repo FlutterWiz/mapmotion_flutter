@@ -7,7 +7,9 @@ import 'package:mapmotion_flutter/core/interfaces/i_location_permission_service.
 import 'package:mapmotion_flutter/presentation/blocs/permission/permission_state.dart';
 
 class PermissionCubit extends Cubit<PermissionState> {
-  PermissionCubit(this._permissionService, this._appLifeCycleService) : super(PermissionState.initial());
+  PermissionCubit(this._permissionService, this._appLifeCycleService) : super(PermissionState.initial()) {
+    initialize();
+  }
 
   final ILocationPermissionService _permissionService;
   final IAppLifeCycleService _appLifeCycleService;
