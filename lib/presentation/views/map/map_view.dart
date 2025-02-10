@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mapmotion_flutter/core/config/app_config.dart';
 import 'package:mapmotion_flutter/presentation/views/map/widgets/center_button.dart';
@@ -12,8 +13,37 @@ class MapView extends StatefulWidget {
   State<MapView> createState() => _MapViewState();
 }
 
-class _MapViewState extends State<MapView> {
-  final _mapController = MapController();
+class _MapViewState extends State<MapView> with TickerProviderStateMixin {
+  late final AnimatedMapController _animatedMapController;
+  late final AnimationController _animationController;
+  late final Animation<double> _animation;
+
+  @override
+  void dispose() {
+    _animatedMapController.dispose();
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    _animatedMapController = AnimatedMapController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+      curve: Curves.easeInOut,
+      cancelPreviousAnimations: true,
+    );
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _animation = Tween<double>(begin: 30, end: 45).animate(_animationController);
+
+    _animationController.repeat(reverse: true); // animate in loop
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +55,7 @@ class _MapViewState extends State<MapView> {
         alignment: Alignment.bottomCenter,
         children: [
           FlutterMap(
-            mapController: _mapController,
+            mapController: _animatedMapController.mapController,
             options: MapOptions(
               initialCenter: const LatLng(51.509364, -0.128928),
               initialZoom: 9.2,
@@ -38,18 +68,16 @@ class _MapViewState extends State<MapView> {
             ),
             children: [
               TileLayer(
-                // Bring your own tiles
                 urlTemplate: 'https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}@2x.png?api_key=$stadiaApiKey',
-                userAgentPackageName: 'com.example.app', // Add your app identifier
-                // And many more recommended properties!
+                userAgentPackageName: 'com.example.app',
               ),
-              const MarkerLayer(
+              MarkerLayer(
                 markers: [
                   Marker(
                     point: const LatLng(51.509364, -0.128928),
-                    width: 50,
-                    height: 50,
-                    child: CustomMarker(),
+                    width: 60,
+                    height: 60,
+                    child: CustomMarker(animation: _animation),
                   ),
                 ],
               ),
@@ -57,7 +85,10 @@ class _MapViewState extends State<MapView> {
           ),
           CenterButton(
             onPressed: () {
-              _mapController.move(const LatLng(51.509364, -0.128928), 9.2);
+              _animatedMapController.animateTo(
+                dest: const LatLng(51.509364, -0.128928),
+                zoom: 9.2,
+              );
             },
           ),
         ],
