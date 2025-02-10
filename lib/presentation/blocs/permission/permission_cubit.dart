@@ -2,20 +2,18 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mapmotion_flutter/core/constants/enums/location_permission_status_enum.dart';
-import 'package:mapmotion_flutter/core/di/dependency_injector.dart';
+import 'package:mapmotion_flutter/core/interfaces/i_app_life_cycle_service.dart';
 import 'package:mapmotion_flutter/core/interfaces/i_location_permission_service.dart';
-import 'package:mapmotion_flutter/presentation/blocs/application_life_cycle/application_life_cycle_cubit.dart';
 import 'package:mapmotion_flutter/presentation/blocs/permission/permission_state.dart';
 
 class PermissionCubit extends Cubit<PermissionState> {
-  PermissionCubit(this._permissionService) : super(PermissionState.initial());
+  PermissionCubit(this._permissionService, this._appLifeCycleService) : super(PermissionState.initial());
 
   final ILocationPermissionService _permissionService;
+  final IAppLifeCycleService _appLifeCycleService;
 
   StreamSubscription<bool>? _locationPermissionStatusSubscription;
   StreamSubscription<bool>? _appLifeCycleSubscription;
-
-  ApplicationLifeCycleCubit get _appLifeCycleCubit => getIt<ApplicationLifeCycleCubit>();
 
   @override
   Future<void> close() {
@@ -34,7 +32,7 @@ class PermissionCubit extends Cubit<PermissionState> {
     });
 
     _appLifeCycleSubscription?.cancel();
-    _appLifeCycleSubscription = _appLifeCycleCubit.stream.map((s) => s.isResumed).listen((isResumed) async {
+    _appLifeCycleSubscription = _appLifeCycleService.isResumedStream.listen((isResumed) async {
       if (isResumed) {
         final isGranted = await _permissionService.isLocationPermissionGranted();
 
