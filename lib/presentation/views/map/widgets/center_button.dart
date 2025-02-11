@@ -2,20 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:mapmotion_flutter/core/constants/colors.dart';
 
 class CenterButton extends StatelessWidget {
-  const CenterButton({Key? key, required this.onPressed, required this.text}) : super(key: key);
+  const CenterButton({Key? key, required this.onPressed, required this.visible}) : super(key: key);
 
   final VoidCallback onPressed;
-  final String text;
+  final bool visible;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 28),
-      child: OutlinedButton(
-        onPressed: onPressed,
-        child: Text(text),
-        style: ButtonStyle(
-          backgroundColor: WidgetStateProperty.all(white),
+    return Visibility(
+      visible: visible,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 28),
+        child: OutlinedButton(
+          onPressed: onPressed,
+          child: const Text('Reset'),
+          style: ButtonStyle(
+            backgroundColor: WidgetStateProperty.all(white),
+          ),
         ),
       ),
     );
