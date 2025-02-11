@@ -21,23 +21,15 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   late final AnimationController _lottieController;
 
   LatLngTween? _positionTween;
-  LatLng? _animatedPosition;
+  late LatLng _animatedPosition;
+  late LatLng _initialPoint;
 
-  final LatLng _initialPoint = const LatLng(38.423734, 27.142826);
   bool visible = false;
-
-  @override
-  void dispose() {
-    _mapController.dispose();
-    _movementController.dispose();
-    _lottieController.dispose();
-    super.dispose();
-  }
+  bool _initialLocationSet = false;
 
   @override
   void initState() {
     super.initState();
-    _animatedPosition = _initialPoint;
 
     _mapController = AnimatedMapController(
       vsync: this,
@@ -59,8 +51,16 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     _lottieController = AnimationController(vsync: this);
   }
 
+  @override
+  void dispose() {
+    _mapController.dispose();
+    _movementController.dispose();
+    _lottieController.dispose();
+    super.dispose();
+  }
+
   void _resetEverything() {
-    _positionTween = LatLngTween(begin: _animatedPosition!, end: _initialPoint);
+    _positionTween = LatLngTween(begin: _animatedPosition, end: _initialPoint);
     _movementController
       ..reset()
       ..forward();
@@ -74,38 +74,58 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   }
 
   void _handleMapTap(LatLng tappedPoint) {
-    _lottieController.repeat();
-    _positionTween = LatLngTween(begin: _animatedPosition!, end: tappedPoint);
+    if (!_lottieController.isAnimating) {
+      _lottieController.repeat();
+    }
+
+    _positionTween = LatLngTween(begin: _animatedPosition, end: tappedPoint);
     _movementController
       ..reset()
       ..forward();
 
     _mapController.animateTo(dest: tappedPoint, zoom: 13);
-    setState(() {
-      visible = true;
-    });
+
+    if (!visible) {
+      setState(() {
+        visible = true;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('MapMotion Flutter')),
-      body: BlocBuilder<LocationCubit, LocationState>(
-        builder: (context, state) {
-          if (state.userLocation == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: BlocListener<LocationCubit, LocationState>(
+        listenWhen: (p, c) => p.userLocation != c.userLocation,
+        listener: (context, state) {
+          if (state.userLocation != null && !_initialLocationSet) {
+            final usersLocation = LatLng(state.userLocation!.latitude, state.userLocation!.longitude);
 
-          return MapViewBody(
-            mapController: _mapController.mapController,
-            markerPosition: _animatedPosition!,
-            initialPoint: _initialPoint,
-            visible: visible,
-            onPressedCenterButton: _resetEverything,
-            onTapCallback: _handleMapTap,
-            customMarker: CustomMarker(lottieController: _lottieController),
-          );
+            setState(() {
+              _initialPoint = usersLocation;
+              _animatedPosition = usersLocation;
+              _initialLocationSet = true;
+            });
+          }
         },
+        child: BlocBuilder<LocationCubit, LocationState>(
+          builder: (context, state) {
+            if (state.userLocation == null || !_initialLocationSet) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            return MapViewBody(
+              mapController: _mapController.mapController,
+              markerPosition: _animatedPosition,
+              initialPoint: _initialPoint,
+              visible: visible,
+              onPressedCenterButton: _resetEverything,
+              onTapCallback: _handleMapTap,
+              customMarker: CustomMarker(lottieController: _lottieController),
+            );
+          },
+        ),
       ),
     );
   }
