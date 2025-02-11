@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mapmotion_flutter/core/di/dependency_injector.dart';
 import 'package:mapmotion_flutter/core/interfaces/i_location_service.dart';
@@ -45,9 +46,18 @@ class LocationCubit extends Cubit<LocationState> {
   }
 
   void openLocationSubscription() {
-    _locationSubscription?.cancel();
-    _locationSubscription = _locationService.locationStream.listen((location) {
-      emit(state.copyWith(userLocation: location));
-    });
+    try {
+      _locationSubscription?.cancel();
+      _locationSubscription = _locationService.locationStream.listen(
+        (location) {
+          emit(state.copyWith(userLocation: location));
+        },
+        onError: (error) {
+          debugPrint('Location stream error: $error');
+        },
+      );
+    } catch (e) {
+      debugPrint('Error subscribing to location stream: $e');
+    }
   }
 }
