@@ -19,19 +19,14 @@ class LocationCubit extends Cubit<LocationState> {
   StreamSubscription<Location>? _locationSubscription;
   StreamSubscription<PermissionState>? _permissionSubscription;
 
-  // Timer for simulating location changes.
-  Timer? _simulationTimer;
-
   @override
   Future<void> close() {
     _locationSubscription?.cancel();
     _permissionSubscription?.cancel();
-    _simulationTimer?.cancel();
     return super.close();
   }
 
   void initialize() {
-    // Check if location access is available.
     final isLocationAccessible =
         _permissionCubit.state.isLocationPermissionGranted && _permissionCubit.state.isLocationServiceEnabled;
 
@@ -45,7 +40,6 @@ class LocationCubit extends Cubit<LocationState> {
         openLocationSubscription();
       } else {
         _locationSubscription?.cancel();
-        stopSimulation();
       }
     });
   }
@@ -53,30 +47,7 @@ class LocationCubit extends Cubit<LocationState> {
   void openLocationSubscription() {
     _locationSubscription?.cancel();
     _locationSubscription = _locationService.locationStream.listen((location) {
-      // Only update from the real location stream if simulation is not active.
-      if (_simulationTimer == null) {
-        emit(state.copyWith(userLocation: location));
-      }
+      emit(state.copyWith(userLocation: location));
     });
-  }
-
-  /// Starts simulating location changes.
-  void startSimulation() {
-    _simulationTimer?.cancel();
-    _simulationTimer = Timer.periodic(const Duration(milliseconds: 1850), (timer) {
-      if (state.userLocation != null) {
-        final newLoc = Location(
-          latitude: state.userLocation!.latitude + 0.015,
-          longitude: state.userLocation!.longitude + 0.015,
-        );
-        emit(state.copyWith(userLocation: newLoc));
-      }
-    });
-  }
-
-  /// Stops the simulation of location changes.
-  void stopSimulation() {
-    _simulationTimer?.cancel();
-    _simulationTimer = null;
   }
 }
