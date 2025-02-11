@@ -8,7 +8,7 @@ class CustomMarker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Lottie.asset(
-      'assets/car.json',
+      'assets/location.json',
       width: 250,
       height: 250,
       controller: lottieController,

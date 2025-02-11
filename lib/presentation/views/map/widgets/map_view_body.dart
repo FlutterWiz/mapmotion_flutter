@@ -2,26 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mapmotion_flutter/core/config/app_config.dart';
+import 'package:mapmotion_flutter/core/constants/colors.dart';
 import 'package:mapmotion_flutter/presentation/views/map/widgets/custom_marker.dart';
 import 'package:mapmotion_flutter/presentation/views/map/widgets/center_button.dart';
 
 class MapViewBody extends StatelessWidget {
   final MapController mapController;
   final LatLng markerPosition;
-  final bool simulationActive;
   final LatLng initialPoint;
-  final String buttonText;
+  final bool visible;
   final VoidCallback onPressedCenterButton;
+  final Function(LatLng tappedPoint) onTapCallback;
   final CustomMarker customMarker;
 
   const MapViewBody({
     Key? key,
     required this.mapController,
     required this.markerPosition,
-    required this.simulationActive,
     required this.initialPoint,
-    required this.buttonText,
+    required this.visible,
     required this.onPressedCenterButton,
+    required this.onTapCallback,
     required this.customMarker,
   }) : super(key: key);
 
@@ -46,10 +47,10 @@ class MapViewBody extends StatelessWidget {
                 const LatLng(90, 180),
               ),
             ),
+            onTap: (tapPosition, point) => onTapCallback(point),
           ),
           children: [
             TileLayer(urlTemplate: urlTemplate),
-            // Draw target polygon (square) with transparent fill and blue border.
             PolygonLayer(
               polygons: [
                 Polygon(
@@ -59,9 +60,9 @@ class MapViewBody extends StatelessWidget {
                     LatLng(38.503734, 27.262826),
                     LatLng(38.503734, 27.222826),
                   ],
-                  color: Colors.transparent,
-                  borderColor: Colors.blue,
-                  borderStrokeWidth: 2.0,
+                  color: transparent,
+                  borderColor: red,
+                  borderStrokeWidth: 4,
                 ),
               ],
             ),
@@ -78,7 +79,7 @@ class MapViewBody extends StatelessWidget {
           ],
         ),
         CenterButton(
-          text: buttonText,
+          visible: visible,
           onPressed: onPressedCenterButton,
         ),
       ],
