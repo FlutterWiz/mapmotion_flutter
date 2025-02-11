@@ -15,6 +15,7 @@ class MapViewBody extends StatelessWidget {
   final VoidCallback onPressedCenterButton;
   final Function(LatLng tappedPoint) onTapCallback;
   final CustomMarker customMarker;
+  final List<LatLng> polylinePoints;
 
   const MapViewBody({
     Key? key,
@@ -25,6 +26,7 @@ class MapViewBody extends StatelessWidget {
     required this.onPressedCenterButton,
     required this.onTapCallback,
     required this.customMarker,
+    required this.polylinePoints,
   }) : super(key: key);
 
   @override
@@ -32,23 +34,24 @@ class MapViewBody extends StatelessWidget {
     final stadiaApiKey = AppConfig.apiKey;
     final urlTemplate = 'https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}@2x.png?api_key=$stadiaApiKey';
 
+    final points = const [
+      LatLng(38.543734, 27.222826),
+      LatLng(38.543734, 27.262826),
+      LatLng(38.503734, 27.262826),
+      LatLng(38.503734, 27.222826),
+    ];
+    final bounds = LatLngBounds(
+      const LatLng(-90, -180),
+      const LatLng(90, 180),
+    );
+    final controlPoints = [
+      ControlPoint(position: 0.5, type: ControlPointType.visible),
+      ControlPoint(position: 1, type: ControlPointType.transparent),
+    ];
+
     return SoftEdgeBlur(
       edges: [
-        EdgeBlur(
-          type: EdgeType.topEdge,
-          size: 200,
-          sigma: 5,
-          controlPoints: [
-            ControlPoint(
-              position: 0.5,
-              type: ControlPointType.visible,
-            ),
-            ControlPoint(
-              position: 1,
-              type: ControlPointType.transparent,
-            ),
-          ],
-        ),
+        EdgeBlur(type: EdgeType.topEdge, size: 200, sigma: 5, controlPoints: controlPoints),
       ],
       child: Stack(
         alignment: Alignment.bottomCenter,
@@ -57,28 +60,22 @@ class MapViewBody extends StatelessWidget {
             mapController: mapController,
             options: MapOptions(
               initialCenter: markerPosition,
-              interactionOptions: const InteractionOptions(
-                flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
-              ),
-              cameraConstraint: CameraConstraint.contain(
-                bounds: LatLngBounds(
-                  const LatLng(-90, -180),
-                  const LatLng(90, 180),
-                ),
-              ),
+              interactionOptions: const InteractionOptions(flags: InteractiveFlag.all & ~InteractiveFlag.rotate),
+              cameraConstraint: CameraConstraint.contain(bounds: bounds),
               onTap: (tapPosition, point) => onTapCallback(point),
             ),
             children: [
               TileLayer(urlTemplate: urlTemplate),
+              // Draw the polyline behind the marker:
+              PolylineLayer(
+                polylines: [
+                  Polyline(points: polylinePoints, strokeWidth: 4, color: indigo),
+                ],
+              ),
               PolygonLayer(
                 polygons: [
                   Polygon(
-                    points: const [
-                      LatLng(38.543734, 27.222826),
-                      LatLng(38.543734, 27.262826),
-                      LatLng(38.503734, 27.262826),
-                      LatLng(38.503734, 27.222826),
-                    ],
+                    points: points,
                     color: transparent,
                     borderColor: red,
                     borderStrokeWidth: 4,
@@ -97,10 +94,7 @@ class MapViewBody extends StatelessWidget {
               ),
             ],
           ),
-          ResetButton(
-            visible: visible,
-            onPressed: onPressedCenterButton,
-          ),
+          ResetButton(visible: visible, onPressed: onPressedCenterButton),
         ],
       ),
     );

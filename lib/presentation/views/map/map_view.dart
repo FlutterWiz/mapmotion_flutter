@@ -24,6 +24,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   LatLngTween? _positionTween;
   late LatLng _animatedPosition;
   late LatLng _initialPoint;
+  List<LatLng> _pathPoints = [];
 
   bool visible = false;
   bool _initialLocationSet = false;
@@ -43,8 +44,13 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
       duration: const Duration(seconds: 2),
     )..addListener(() {
         if (_positionTween != null) {
+          final newPos = _positionTween!.lerp(_movementController.value);
           setState(() {
-            _animatedPosition = _positionTween!.lerp(_movementController.value);
+            _animatedPosition = newPos;
+
+            if (_pathPoints.isNotEmpty) {
+              _pathPoints[_pathPoints.length - 1] = newPos;
+            }
           });
         }
       });
@@ -68,6 +74,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
 
     setState(() {
       _animatedPosition = _initialPoint;
+      _pathPoints = [_initialPoint];
       visible = false;
     });
 
@@ -78,6 +85,10 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
     if (!_lottieController.isAnimating) {
       _lottieController.repeat();
     }
+
+    setState(() {
+      _pathPoints.add(_animatedPosition);
+    });
 
     _positionTween = LatLngTween(begin: _animatedPosition, end: tappedPoint);
     _movementController
@@ -108,6 +119,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
               _initialPoint = usersLocation;
               _animatedPosition = usersLocation;
               _initialLocationSet = true;
+              _pathPoints = [usersLocation];
             });
           }
         },
@@ -124,6 +136,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
               visible: visible,
               onPressedCenterButton: _resetEverything,
               onTapCallback: _handleMapTap,
+              polylinePoints: _pathPoints,
               customMarker: CustomMarker(lottieController: _lottieController),
             );
           },
