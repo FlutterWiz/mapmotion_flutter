@@ -60,13 +60,17 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   }
 
   void _resetEverything() {
+    _positionTween = LatLngTween(begin: _animatedPosition!, end: _initialPoint);
+    _movementController
+      ..reset()
+      ..forward();
+
     setState(() {
       _animatedPosition = _initialPoint;
       visible = false;
     });
 
     _mapController.animateTo(dest: _initialPoint, zoom: 13);
-    _lottieController.stop();
   }
 
   void _handleMapTap(LatLng tappedPoint) {
@@ -91,6 +95,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
           if (state.userLocation == null) {
             return const Center(child: CircularProgressIndicator());
           }
+
           return MapViewBody(
             mapController: _mapController.mapController,
             markerPosition: _animatedPosition!,
