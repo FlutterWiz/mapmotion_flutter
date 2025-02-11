@@ -36,9 +36,15 @@ class PermissionCubit extends Cubit<PermissionState> {
     _appLifeCycleSubscription?.cancel();
     _appLifeCycleSubscription = _appLifeCycleService.isResumedStream.listen((isResumed) async {
       if (isResumed) {
-        final isGranted = await _permissionService.isLocationPermissionGranted();
+        final isLocationPermissionGranted = await _permissionService.isLocationPermissionGranted();
+        final isLocationServiceEnabled = await _permissionService.isLocationServicesEnabled();
 
-        emit(state.copyWith(isLocationPermissionGranted: isGranted));
+        emit(
+          state.copyWith(
+            isLocationPermissionGranted: isLocationPermissionGranted,
+            isLocationServiceEnabled: isLocationServiceEnabled,
+          ),
+        );
       }
     });
 

@@ -1,12 +1,11 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:mapmotion_flutter/core/constants/colors.dart';
 import 'package:mapmotion_flutter/presentation/blocs/location/location_cubit.dart';
 import 'package:mapmotion_flutter/presentation/blocs/location/location_state.dart';
+import 'package:mapmotion_flutter/presentation/blocs/permission/permission_cubit.dart';
+import 'package:mapmotion_flutter/presentation/blocs/permission/permission_state.dart';
 import 'package:mapmotion_flutter/presentation/views/location_permission_denied/location_permission_denied_view.dart';
 import 'package:mapmotion_flutter/presentation/views/map/widgets/latlng_tween.dart';
 import 'package:mapmotion_flutter/presentation/views/map/widgets/map_view_body.dart';
@@ -32,20 +31,9 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   bool visible = false;
   bool _initialLocationSet = false;
 
-  bool _showPermissionDeniedView = false;
-  Timer? _permissionDeniedTimer;
-
   @override
   void initState() {
     super.initState();
-
-    _permissionDeniedTimer = Timer(const Duration(seconds: 10), () {
-      if (!_initialLocationSet) {
-        setState(() {
-          _showPermissionDeniedView = true;
-        });
-      }
-    });
 
     _mapController = AnimatedMapController(
       vsync: this,
@@ -74,8 +62,6 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _permissionDeniedTimer?.cancel();
-    _permissionDeniedTimer = null;
     _mapController.dispose();
     _movementController.dispose();
     _lottieController.dispose();
@@ -122,48 +108,50 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(backgroundColor: transparent),
-      body: BlocListener<LocationCubit, LocationState>(
-        listenWhen: (p, c) => p.userLocation != c.userLocation,
-        listener: (context, state) {
-          if (state.userLocation != null && !_initialLocationSet) {
-            final usersLocation = LatLng(state.userLocation!.latitude, state.userLocation!.longitude);
-
-            setState(() {
-              _initialPoint = usersLocation;
-              _animatedPosition = usersLocation;
-              _initialLocationSet = true;
-              _pathPoints = [usersLocation];
-              _showPermissionDeniedView = false;
-            });
-
-            _permissionDeniedTimer?.cancel();
-            _permissionDeniedTimer = null;
-          }
-        },
-        child: BlocBuilder<LocationCubit, LocationState>(
-          builder: (context, state) {
-            if (state.userLocation == null || !_initialLocationSet) {
-              return _showPermissionDeniedView
-                  ? const LocationPermissionDeniedView()
-                  : const Center(child: CircularProgressIndicator());
-            }
-
-            return MapViewBody(
-              mapController: _mapController.mapController,
-              markerPosition: _animatedPosition,
-              initialPoint: _initialPoint,
-              visible: visible,
-              onPressedCenterButton: _resetEverything,
-              onTapCallback: _handleMapTap,
-              polylinePoints: _pathPoints,
-              customMarker: CustomMarker(lottieController: _lottieController),
-            );
-          },
-        ),
-      ),
+    return BlocBuilder<PermissionCubit, PermissionState>(
+      builder: (context, permissionState) {
+        // If location permission is not granted or location services are off,
+        // immediately show the denied view.
+        if (!permissionState.isLocationPermissionGranted || !permissionState.isLocationServiceEnabled) {
+          return const LocationPermissionDeniedView();
+        }
+        // Otherwise, proceed with the map view.
+        return Scaffold(
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(backgroundColor: Colors.transparent),
+          body: BlocConsumer<LocationCubit, LocationState>(
+            listener: (context, locationState) {
+              if (locationState.userLocation != null && !_initialLocationSet) {
+                final usersLocation = LatLng(
+                  locationState.userLocation!.latitude,
+                  locationState.userLocation!.longitude,
+                );
+                setState(() {
+                  _initialPoint = usersLocation;
+                  _animatedPosition = usersLocation;
+                  _initialLocationSet = true;
+                  _pathPoints = [usersLocation];
+                });
+              }
+            },
+            builder: (context, state) {
+              if (state.userLocation == null || !_initialLocationSet) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              return MapViewBody(
+                mapController: _mapController.mapController,
+                markerPosition: _animatedPosition,
+                initialPoint: _initialPoint,
+                visible: visible,
+                onPressedCenterButton: _resetEverything,
+                onTapCallback: _handleMapTap,
+                polylinePoints: _pathPoints,
+                customMarker: CustomMarker(lottieController: _lottieController),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
