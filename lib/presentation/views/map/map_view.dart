@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
@@ -5,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:mapmotion_flutter/core/constants/colors.dart';
 import 'package:mapmotion_flutter/presentation/blocs/location/location_cubit.dart';
 import 'package:mapmotion_flutter/presentation/blocs/location/location_state.dart';
+import 'package:mapmotion_flutter/presentation/views/location_permission_denied/location_permission_denied_view.dart';
 import 'package:mapmotion_flutter/presentation/views/map/widgets/latlng_tween.dart';
 import 'package:mapmotion_flutter/presentation/views/map/widgets/map_view_body.dart';
 import 'package:mapmotion_flutter/presentation/views/map/widgets/custom_marker.dart';
@@ -29,9 +32,20 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   bool visible = false;
   bool _initialLocationSet = false;
 
+  bool _showPermissionDeniedView = false;
+  Timer? _permissionDeniedTimer;
+
   @override
   void initState() {
     super.initState();
+
+    _permissionDeniedTimer = Timer(const Duration(seconds: 10), () {
+      if (!_initialLocationSet) {
+        setState(() {
+          _showPermissionDeniedView = true;
+        });
+      }
+    });
 
     _mapController = AnimatedMapController(
       vsync: this,
@@ -60,6 +74,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _permissionDeniedTimer?.cancel();
+    _permissionDeniedTimer = null;
     _mapController.dispose();
     _movementController.dispose();
     _lottieController.dispose();
@@ -120,13 +136,19 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
               _animatedPosition = usersLocation;
               _initialLocationSet = true;
               _pathPoints = [usersLocation];
+              _showPermissionDeniedView = false;
             });
+
+            _permissionDeniedTimer?.cancel();
+            _permissionDeniedTimer = null;
           }
         },
         child: BlocBuilder<LocationCubit, LocationState>(
           builder: (context, state) {
             if (state.userLocation == null || !_initialLocationSet) {
-              return const Center(child: CircularProgressIndicator());
+              return _showPermissionDeniedView
+                  ? const LocationPermissionDeniedView()
+                  : const Center(child: CircularProgressIndicator());
             }
 
             return MapViewBody(
