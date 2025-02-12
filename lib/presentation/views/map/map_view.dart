@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mapmotion_flutter/core/constants/colors.dart';
 import 'package:mapmotion_flutter/presentation/blocs/location/location_cubit.dart';
 import 'package:mapmotion_flutter/presentation/blocs/location/location_state.dart';
 import 'package:mapmotion_flutter/presentation/blocs/permission/permission_cubit.dart';
@@ -118,7 +119,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
         // Otherwise, proceed with the map view.
         return Scaffold(
           extendBodyBehindAppBar: true,
-          appBar: AppBar(backgroundColor: Colors.transparent),
+          appBar: AppBar(backgroundColor: transparent),
           body: BlocConsumer<LocationCubit, LocationState>(
             listener: (context, locationState) {
               if (locationState.userLocation != null && !_initialLocationSet) {
