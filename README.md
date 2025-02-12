@@ -5,8 +5,8 @@
 ## Showcase
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/c5a080e6-f35a-4fc4-87f1-f0809b39cda9">
-  <img src="https://github.com/user-attachments/assets/9bdc1087-3eb6-44ed-a0ad-9b032b2ba85d">
+  <img src="https://github.com/FlutterWiz/mapmotion_flutter/blob/main/assets/showcases/showcase1.gif?raw=true" width="600">
+  <img src="https://github.com/FlutterWiz/mapmotion_flutter/blob/main/assets/showcases/showcase2.gif?raw=true" width="600">
 </p>
 
 ## Features
