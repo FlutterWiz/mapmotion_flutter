@@ -51,12 +51,14 @@
 ## Tutorials
 <img src="https://github.com/user-attachments/assets/3a384a90-1faf-4994-9349-23aa86d3c40b" width="200">
 <img src="https://github.com/user-attachments/assets/b73a0208-4dbb-4016-93ec-bf0f6f7d9feb" width="200">
+<img src="https://github.com/user-attachments/assets/82e06140-4b9f-4b78-b736-08b364829bfc" width="200">
 
 - **YouTube & Medium**  
   - YouTube Videos 🎥
     - [Part 1: Handling Location, Permissions & App Lifecycle](https://youtu.be/X8EX7yqoy1A)
     - [Part 2: Interactive Maps, Animations & Path Tracking](https://youtu.be/Xz0HVcZ41v8)
-  - Medium Article (Coming Soon) ✍️
+  - Medium Article ✍️
+    - [Building a Flutter Map App: MVVM Architecture, State Management, and Real-Time Location Tracking](https://medium.com/@FlutterWiz/building-a-flutter-map-app-mvvm-architecture-state-management-and-real-time-location-tracking-88d1bf8de523)
 
 ## License
 
